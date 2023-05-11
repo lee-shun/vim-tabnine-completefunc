@@ -1,4 +1,4 @@
-let s:binary_dir = expand('<sfile>:p:h:h:h:h') . '/binaries'
+let s:binary_dir = expand('<sfile>:p:h:h') . '/binaries'
 let s:is_win = has('win32') || has('win64')
 let s:tabnine_run = v:false
 
