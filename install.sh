@@ -1,22 +1,30 @@
-#!/bin/sh
-set -e
+#!/usr/bin/env bash
+set -o errexit
 
-# This script downloads the binaries for the most recent version of TabNine.
-
-version="$(curl -sS https://update.tabnine.com/bundles/version)"
-targets='x86_64-apple-darwin
-    aarch64-apple-darwin
-    x86_64-unknown-linux-musl'
-
-rm -rf ./binaries
+version=$(curl -sS https://update.tabnine.com/bundles/version)
+case $(uname -s) in
+    'Darwin')
+        targets='x86_64-apple-darwin
+            aarch64-apple-darwin'
+        ;;
+    'Linux')
+        targets="$(uname -m)-unknown-linux-musl"
+        ;;
+esac
 
 echo "$targets" | while read target
 do
-    mkdir -p binaries/$version/$target
-    path=$version/$target
-    echo "downloading $path"
-    curl -sS https://update.tabnine.com/bundles/$path/TabNine.zip > binaries/$path/TabNine.zip
-    unzip -o binaries/$path/TabNine.zip -d binaries/$path
-    rm binaries/$path/TabNine.zip
-    chmod +x binaries/$path/*
+    cd $(dirname $0)
+    zip=$version/$target/TabNine.zip
+    path=$version/$target/TabNine
+    if [ -f binaries/$path ]; then
+        exit
+    fi
+    echo Downloading version $version $target
+    curl https://update.tabnine.com/bundles/$zip --create-dirs -o binaries/$zip
+    pushd $(dirname binaries/$zip)
+    unzip -o TabNine.zip
+    chmod +x WD-TabNine TabNine TabNine-deep-local TabNine-deep-cloud
+    rm TabNine.zip
+    popd
 done
